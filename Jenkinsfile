@@ -1,34 +1,21 @@
 pipeline {
     agent any
 
-    environment {
-        AWS_REGION = 'us-east-2'
-        TF_VERSION = '1.6.0'
+environment {
+       AWS_CREDENTIALS_ID = credentials'0e266191-8d85-4ebb-a9a5-ff43d91089fe'  // Replace with actual AWS credential ID
     }
 
-    tools {
-        terraform "${TF_VERSION}"
+    parameters {
+        choice(name: 'ACTION', choices: ['apply', 'destroy'], description: 'Choose Terraform action')
     }
 
     stages {
+        
         stage('Checkout Terraform Code') {
             steps {
                 git branch: 'main',
                    
                     url: 'https://github.com/Devadharshini1122/jenkins-practical.git'
-            }
-        }
-
-        stage('Setup AWS Credentials') {
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: '0e266191-8d85-4ebb-a9a5-ff43d91089fe']]) {
-                    sh '''
-                        export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-                        export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                        export AWS_DEFAULT_REGION=${AWS_REGION}
-                        echo "AWS Credentials Set"
-                    '''
-                }
             }
         }
 
@@ -46,7 +33,6 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                input message: "Do you want to apply Terraform changes?"
                 sh 'terraform apply -auto-approve'
             }
         }
